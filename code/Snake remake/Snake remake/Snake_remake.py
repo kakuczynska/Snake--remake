@@ -6,7 +6,7 @@ import os
 CWD = os.getcwd()
 CANVAS_WIDTH = 396
 CANVAS_HEIGHT = 594
-UPDATE_DELAY_TIME = 1000
+UPDATE_DELAY_TIME = 500
 OBJECT_DIAMETER = 18
 VERS = 33
 COLUMN = 22
@@ -51,7 +51,7 @@ def init():
 
     g_canvas.grid(column = 0, row = 0)
 
-    g_canvas.bind("<Key>",key_input)
+    g_canvas.bind("<Key>", key_input)
     g_canvas.focus_set()
     
     g_grid = []
@@ -64,20 +64,20 @@ def init():
 class Potatoes:
     def __init__(self):
         self.widget = ImageTk.PhotoImage(Potatoes.texture)
-        self.location_x = random.randint(0,COLUMN)
-        self.location_y = random.randint(0,VERS)
+        self.location_x = random.randint(0,COLUMN-1)
+        self.location_y = random.randint(0,VERS-1)
 
         while g_grid[self.location_x][self.location_y] == True:
-            self.location_x = random.randint(0,COLUMN)
-            self.location_y = random.randint(0,VERS)
+            self.location_x = random.randint(0,COLUMN-1)
+            self.location_y = random.randint(0,VERS-1)
         
         g_grid[self.location_x][self.location_y] = True
 
     def die(self):
         g_grid[self.location_x][self.location_y] = False
         
-        self.location_x = random.randint(0,COLUMN)
-        self.location_y = random.randint(0,VERS)
+        self.location_x = random.randint(0,COLUMN-1)
+        self.location_y = random.randint(0,VERS-1)
 
         g_grid[self.location_x][self.location_y] = True
 
