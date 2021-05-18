@@ -19,7 +19,7 @@ def draw():
             x = column_id*OBJECT_DIAMETER
             y = vers_id*OBJECT_DIAMETER
             if g_grid[column_id][vers_id] == True:
-                g_canvas.create_image((x,y),image = g_potato.widget,anchor = "ne")
+                g_canvas.create_image((x,y),image = g_potato.widget,anchor = "nw")
 
 def update():
     g_snake.movement()
@@ -106,7 +106,7 @@ class Snake:
             exit_game = True
         else:
             if g_grid[self.location_x][self.location_y] == False:
-                if self.location_x < 1 or self.location_y < 0:
+                if self.location_x < 0 or self.location_y < 0:
                     exit_game = True
                 else:
                     self.parts.insert(0,Snake_parts(self.location_x,self.location_y))
