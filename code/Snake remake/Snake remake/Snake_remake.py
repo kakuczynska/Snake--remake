@@ -1,15 +1,16 @@
 import tkinter
 import random
+import neat
 from PIL import Image,ImageTk
 import os
 
 CWD = os.getcwd()
-CANVAS_WIDTH = 396
-CANVAS_HEIGHT = 594
-UPDATE_DELAY_TIME = 500
 OBJECT_DIAMETER = 18
 VERS = 33
 COLUMN = 22
+CANVAS_WIDTH = OBJECT_DIAMETER * COLUMN
+CANVAS_HEIGHT = OBJECT_DIAMETER * VERS
+UPDATE_DELAY_TIME = 500
 
 def draw():
     g_canvas.delete("all")
@@ -23,6 +24,7 @@ def draw():
 def update():
     g_snake.movement()
     if exit_game == True:
+        draw()
         window.quit()
         window.destroy()
     else:
@@ -100,17 +102,20 @@ class Snake:
         if self.direction == "north":
             self.location_y -= 1
 
-        if g_grid[self.location_x][self.location_y] == False:
-            if self.location_x == COLUMN or self.location_x < 0 or self.location_y == VERS or self.location_y < 0:
-                exit_game = True
-            else:
-                self.parts.insert(0,Snake_parts(self.location_x,self.location_y))
-                self.parts.pop().die()
+        if self.location_x == COLUMN or self.location_y == VERS:
+            exit_game = True
         else:
-            if not (self.location_x == g_potato.location_x and self.location_y == g_potato.location_y):
-                exit_game = True
+            if g_grid[self.location_x][self.location_y] == False:
+                if self.location_x < 1 or self.location_y < 0:
+                    exit_game = True
+                else:
+                    self.parts.insert(0,Snake_parts(self.location_x,self.location_y))
+                    self.parts.pop().die()
             else:
-                self.eat_potatoe()
+                if not (self.location_x == g_potato.location_x and self.location_y == g_potato.location_y):
+                    exit_game = True
+                else:
+                    self.eat_potatoe()
 
     def eat_potatoe(self):
         global g_potato
@@ -136,4 +141,5 @@ def gameplay():
 
     window.mainloop()
 
+gameplay()
 gameplay()
