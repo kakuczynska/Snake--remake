@@ -10,7 +10,8 @@ VERS = 33
 COLUMN = 22
 CANVAS_WIDTH = OBJECT_DIAMETER * COLUMN
 CANVAS_HEIGHT = OBJECT_DIAMETER * VERS
-UPDATE_DELAY_TIME = 500
+UPDATE_DELAY_TIME = 200
+MAX_GENERATION_AMOUNT = 20
 
 def draw():
     g_canvas.delete("all")
@@ -140,6 +141,21 @@ def gameplay():
     update()
 
     window.mainloop()
+
+def fitness_function(l_genomes, l_config):
+    for id_genom, genome in l_genomes:
+        genome.fitness = 0
+
+config_path = os.path.join(CWD,"TextFile1.txt")
+g_config = neat.config.Config(neat.DefaultGenome,neat.DefaultReproduction,
+                            neat.DefaultSpeciesSet,neat.DefaultStagnation,config_path)
+population = neat.Population(g_config)
+
+population.add_reporter(neat.StdOutReporter(True))
+stats = neat.StatisticsReporter()
+population.add_reporter(stats)
+
+winners = population.run(fitness_function, MAX_GENERATION_AMOUNT)
 
 gameplay()
 gameplay()
