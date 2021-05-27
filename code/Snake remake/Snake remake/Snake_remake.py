@@ -23,6 +23,7 @@ def draw():
                 g_canvas.create_image((x,y),image = g_potato.widget,anchor = "nw")
 
 def update():
+    act()
     g_snake.movement()
     if exit_game == True:
         draw()
@@ -32,15 +33,26 @@ def update():
         draw()
         window.after(UPDATE_DELAY_TIME,update)
 
-def key_input(event):
-    if event.char == "d" and g_snake.direction != "west":
+def act():
+    generated_number = random.randint(0, 4)
+    if generated_number == 0 and g_snake.direction != "west":
         g_snake.direction = "east"
-    if event.char == "a" and g_snake.direction != "east":
+    if generated_number == 1 and g_snake.direction != "east":
         g_snake.direction = "west"
-    if event.char == "w" and g_snake.direction != "south":
+    if generated_number == 2 and g_snake.direction != "south":
         g_snake.direction = "north"
-    if event.char == "s" and g_snake.direction != "north":
+    if generated_number == 3 and g_snake.direction != "north":
         g_snake.direction = "south"
+
+#def key_input(event):
+    #if event.char == "d" and g_snake.direction != "west":
+        #g_snake.direction = "east"
+    #if event.char == "a" and g_snake.direction != "east":
+        #g_snake.direction = "west"
+    #if event.char == "w" and g_snake.direction != "south":
+        #g_snake.direction = "north"
+    #if event.char == "s" and g_snake.direction != "north":
+        #g_snake.direction = "south"
 
 def init():
     global g_canvas, g_grid, window, COLUMN, VERS, exit_game
@@ -54,7 +66,7 @@ def init():
 
     g_canvas.grid(column = 0, row = 0)
 
-    g_canvas.bind("<Key>", key_input)
+    #g_canvas.bind("<Key>", key_input)
     g_canvas.focus_set()
     
     g_grid = []
