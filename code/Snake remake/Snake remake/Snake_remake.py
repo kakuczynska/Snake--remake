@@ -10,8 +10,9 @@ VERS = 33
 COLUMN = 22
 CANVAS_WIDTH = OBJECT_DIAMETER * COLUMN
 CANVAS_HEIGHT = OBJECT_DIAMETER * VERS
-UPDATE_DELAY_TIME = 200
+UPDATE_DELAY_TIME = 20
 MAX_GENERATION_AMOUNT = 20
+MAX_FRAME_AMOUNT = 500
 
 def draw():
     g_canvas.delete("all")
@@ -23,8 +24,13 @@ def draw():
                 g_canvas.create_image((x,y),image = g_potato.widget,anchor = "nw")
 
 def update():
-    act()
+    global frame_counter, exit_game
+    #act()
     g_snake.movement()
+    frame_counter += 1
+    window.title(str(frame_counter))
+    if frame_counter == MAX_FRAME_AMOUNT:
+        exit_game = True
     if exit_game == True:
         draw()
         window.quit()
@@ -33,15 +39,16 @@ def update():
         draw()
         window.after(UPDATE_DELAY_TIME,update)
 
-def act():
-    generated_number = random.randint(0, 4)
-    if generated_number == 0 and g_snake.direction != "west":
+def act(output):
+    action_list = range(5)
+    best_action = max(action_list, key = lambda x: output[x])
+    if best_action == 0 and g_snake.direction != "west":
         g_snake.direction = "east"
-    if generated_number == 1 and g_snake.direction != "east":
+    if best_action == 1 and g_snake.direction != "east":
         g_snake.direction = "west"
-    if generated_number == 2 and g_snake.direction != "south":
+    if best_action == 2 and g_snake.direction != "south":
         g_snake.direction = "north"
-    if generated_number == 3 and g_snake.direction != "north":
+    if best_action == 3 and g_snake.direction != "north":
         g_snake.direction = "south"
 
 #def key_input(event):
@@ -55,7 +62,7 @@ def act():
         #g_snake.direction = "south"
 
 def init():
-    global g_canvas, g_grid, window, COLUMN, VERS, exit_game
+    global g_canvas, g_grid, window, COLUMN, VERS, exit_game, frame_counter
     window = tkinter.Tk()
     window.resizable(False,False)
     g_canvas = tkinter.Canvas(width = CANVAS_WIDTH,height = CANVAS_HEIGHT)
@@ -65,6 +72,8 @@ def init():
     Potatoes.texture = Image.open(os.path.join(CWD,"..","..","kropka.jpg"))
 
     g_canvas.grid(column = 0, row = 0)
+
+    frame_counter = 0
 
     #g_canvas.bind("<Key>", key_input)
     g_canvas.focus_set()
@@ -97,15 +106,20 @@ class Potatoes:
         g_grid[self.location_x][self.location_y] = True
 
 class Snake:
-    def __init__(self):
+    def __init__(self, genome, g_config):
         self.location_x = 11 #poprawić
         self.location_y = 16 #poprawić
         self.direction = "east"
         self.parts = []
         self.parts.append(Snake_parts(self.location_x,self.location_y))
+        self.genome = genome
+        self.net = neat.nn.FeedForwardNetwork.create(genome, g_config)
+        self.direction_values = {"east": 0, "west": 1, "south": 2, "north": 3}
 
     def movement(self):
         global exit_game
+        output = self.get_info()
+        act(output)
         if self.direction == "east":
             self.location_x += 1
         if self.direction == "west":
@@ -130,10 +144,19 @@ class Snake:
                 else:
                     self.eat_potatoe()
 
+    def get_info(self):
+        global g_potato
+        input_1 = self.direction_values[self.direction]
+        input_2 = self.location_x - g_potato.location_x
+        input_3 = self.location_y - g_potato.location_y
+        output = self.net.activate((input_1,input_2,input_3))
+        return output
+
     def eat_potatoe(self):
         global g_potato
         self.parts.insert(0,Snake_parts(self.location_x,self.location_y))
         g_potato = Potatoes()
+        self.genome.fitness += 1
 
 class Snake_parts:
     def __init__(self,x,y):
@@ -145,10 +168,10 @@ class Snake_parts:
     def die(self):
         g_grid[self.location_x][self.location_y] = False
 
-def gameplay():   
+def gameplay(genome, l_config):   
     global g_snake, g_potato
     init()
-    g_snake = Snake()
+    g_snake = Snake(genome, l_config)
     g_potato = Potatoes()
     update()
 
@@ -156,7 +179,8 @@ def gameplay():
 
 def fitness_function(l_genomes, l_config):
     for id_genom, genome in l_genomes:
-        genome.fitness = 0
+        genome.fitness = 1
+        gameplay(genome, l_config)
 
 config_path = os.path.join(CWD,"TextFile1.txt")
 g_config = neat.config.Config(neat.DefaultGenome,neat.DefaultReproduction,
@@ -169,5 +193,5 @@ population.add_reporter(stats)
 
 winners = population.run(fitness_function, MAX_GENERATION_AMOUNT)
 
-gameplay()
-gameplay()
+#gameplay()
+#gameplay()
