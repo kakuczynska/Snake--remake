@@ -24,14 +24,20 @@ def draw():
                 g_canvas.create_image((x,y),image = g_potato.widget,anchor = "nw")
 
 def update():
-    global frame_counter, exit_game
+    global frame_counter, exit_game, times_up
     #act()
     g_snake.movement()
     frame_counter += 1
     window.title(str(frame_counter))
+
     if frame_counter == MAX_FRAME_AMOUNT:
-        exit_game = True
+        times_up = True
+    if times_up == True:
+        draw()
+        window.quit()
+        window.destroy()
     if exit_game == True:
+        g_snake.genome.fitness -= 10
         draw()
         window.quit()
         window.destroy()
@@ -62,13 +68,15 @@ def act(output):
         #g_snake.direction = "south"
 
 def init():
-    global g_canvas, g_grid, window, COLUMN, VERS, exit_game, frame_counter
+    global g_canvas, g_grid, window, COLUMN, VERS, exit_game, frame_counter, times_up
     window = tkinter.Tk()
     window.resizable(False,False)
     g_canvas = tkinter.Canvas(width = CANVAS_WIDTH,height = CANVAS_HEIGHT)
 
     exit_game = False
     
+    times_up = False
+
     Potatoes.texture = Image.open(os.path.join(CWD,"..","..","kropka.jpg"))
 
     g_canvas.grid(column = 0, row = 0)
@@ -114,7 +122,12 @@ class Snake:
         self.parts.append(Snake_parts(self.location_x,self.location_y))
         self.genome = genome
         self.net = neat.nn.FeedForwardNetwork.create(genome, g_config)
-        self.direction_values = {"east": 0, "west": 1, "south": 2, "north": 3}
+        self.direction_values = {
+            "east": [1, 0, 0, 0], 
+            "west": [0, 1, 0, 0], 
+            "south":[0, 0, 1, 0], 
+            "north":[0, 0, 0, 1]
+            }
 
     def movement(self):
         global exit_game
@@ -146,17 +159,27 @@ class Snake:
 
     def get_info(self):
         global g_potato
-        input_1 = self.direction_values[self.direction]
-        input_2 = self.location_x - g_potato.location_x
-        input_3 = self.location_y - g_potato.location_y
-        output = self.net.activate((input_1,input_2,input_3))
+        wall_x = 0
+        if self.location_x == COLUMN-1 or self.location_x == 0:
+            wall_x = 1
+        wall_y = 0
+        if self.location_y == VERS-1 or self.location_y == 0:
+            wall_y = 1
+        inputs = []
+        inputs.extend(self.direction_values[self.direction])
+        input_5 = self.location_x - g_potato.location_x
+        input_6 = self.location_y - g_potato.location_y
+        input_7 = wall_x
+        input_8 = wall_y
+        inputs.extend([input_5, input_6, input_7, input_8])
+        output = self.net.activate(inputs)
         return output
 
     def eat_potatoe(self):
         global g_potato
         self.parts.insert(0,Snake_parts(self.location_x,self.location_y))
         g_potato = Potatoes()
-        self.genome.fitness += 1
+        self.genome.fitness += 2
 
 class Snake_parts:
     def __init__(self,x,y):
