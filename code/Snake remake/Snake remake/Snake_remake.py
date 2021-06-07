@@ -36,6 +36,8 @@ def update():
     if frame_counter %EATING_FRAME_CHECK == 9 and potatoe_counter == 0:
         g_snake.genome.fitness -= 10
         potatoe_counter = 0
+    else:
+        potatoe_counter = 0
     if frame_counter == MAX_FRAME_AMOUNT:
         times_up = True
     if times_up == True:
@@ -43,7 +45,7 @@ def update():
         window.quit()
         window.destroy()
     if exit_game == True:
-        g_snake.genome.fitness -= 500
+        g_snake.genome.fitness -= 1000 - frame_counter
         draw()
         window.quit()
         window.destroy()
@@ -170,10 +172,10 @@ class Snake:
     def get_info(self):
         global g_potato
         wall_x = 0
-        if self.location_x == COLUMN-1 or self.location_x == 0:
+        if self.location_x == COLUMN-2 or self.location_x == 0:
             wall_x = 1
         wall_y = 0
-        if self.location_y == VERS-1 or self.location_y == 0:
+        if self.location_y == VERS-2 or self.location_y == 0:
             wall_y = 1
         inputs = []
         inputs.extend(self.direction_values[self.direction])
