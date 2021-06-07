@@ -10,9 +10,10 @@ VERS = 33
 COLUMN = 22
 CANVAS_WIDTH = OBJECT_DIAMETER * COLUMN
 CANVAS_HEIGHT = OBJECT_DIAMETER * VERS
-UPDATE_DELAY_TIME = 20
-MAX_GENERATION_AMOUNT = 20
+UPDATE_DELAY_TIME = 5
+MAX_GENERATION_AMOUNT = 100
 MAX_FRAME_AMOUNT = 500
+EATING_FRAME_CHECK = 10
 
 def draw():
     g_canvas.delete("all")
@@ -24,12 +25,17 @@ def draw():
                 g_canvas.create_image((x,y),image = g_potato.widget,anchor = "nw")
 
 def update():
-    global frame_counter, exit_game, times_up
+    global frame_counter, exit_game, times_up, is_eaten, potatoe_counter
     #act()
     g_snake.movement()
     frame_counter += 1
     window.title(str(frame_counter))
 
+    if is_eaten == True:
+        potatoe_counter += 1
+    if frame_counter %EATING_FRAME_CHECK == 9 and potatoe_counter == 0:
+        g_snake.genome.fitness -= 10
+        potatoe_counter = 0
     if frame_counter == MAX_FRAME_AMOUNT:
         times_up = True
     if times_up == True:
@@ -37,7 +43,7 @@ def update():
         window.quit()
         window.destroy()
     if exit_game == True:
-        g_snake.genome.fitness -= 10
+        g_snake.genome.fitness -= 500
         draw()
         window.quit()
         window.destroy()
@@ -68,7 +74,7 @@ def act(output):
         #g_snake.direction = "south"
 
 def init():
-    global g_canvas, g_grid, window, COLUMN, VERS, exit_game, frame_counter, times_up
+    global g_canvas, g_grid, window, COLUMN, VERS, exit_game, frame_counter, times_up, potatoe_counter
     window = tkinter.Tk()
     window.resizable(False,False)
     g_canvas = tkinter.Canvas(width = CANVAS_WIDTH,height = CANVAS_HEIGHT)
@@ -82,6 +88,7 @@ def init():
     g_canvas.grid(column = 0, row = 0)
 
     frame_counter = 0
+    potatoe_counter = 0
 
     #g_canvas.bind("<Key>", key_input)
     g_canvas.focus_set()
@@ -130,7 +137,7 @@ class Snake:
             }
 
     def movement(self):
-        global exit_game
+        global exit_game, is_eaten
         output = self.get_info()
         act(output)
         if self.direction == "east":
@@ -141,6 +148,8 @@ class Snake:
             self.location_y += 1
         if self.direction == "north":
             self.location_y -= 1
+
+        is_eaten = False
 
         if self.location_x == COLUMN or self.location_y == VERS:
             exit_game = True
@@ -156,6 +165,7 @@ class Snake:
                     exit_game = True
                 else:
                     self.eat_potatoe()
+                    is_eaten = True
 
     def get_info(self):
         global g_potato
@@ -179,7 +189,7 @@ class Snake:
         global g_potato
         self.parts.insert(0,Snake_parts(self.location_x,self.location_y))
         g_potato = Potatoes()
-        self.genome.fitness += 2
+        self.genome.fitness += 100
 
 class Snake_parts:
     def __init__(self,x,y):
