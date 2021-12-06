@@ -15,6 +15,14 @@ MAX_GENERATION_AMOUNT = 100
 MAX_FRAME_AMOUNT = 500
 EATING_FRAME_CHECK = 10
 
+def clip_int(x):
+    if x < 0:
+        return -1
+    elif x > 0:
+        return 1
+    else:
+        return 0
+
 def draw():
     g_canvas.delete("all")
     for column_id in range(COLUMN):
@@ -55,7 +63,7 @@ def update():
 
 def act(output):
     action_list = range(5)
-    best_action = max(action_list, key = lambda x: output[x])
+    best_action = max(action_list, key=lambda x: output[x])
     if best_action == 0 and g_snake.direction != "west":
         g_snake.direction = "east"
     if best_action == 1 and g_snake.direction != "east":
@@ -85,7 +93,7 @@ def init():
     
     times_up = False
 
-    Potatoes.texture = Image.open(os.path.join(CWD,"..","..","kropka.jpg"))
+    Potatoes.texture = Image.open(os.path.join(CWD, "kropka.jpg"))
 
     g_canvas.grid(column = 0, row = 0)
 
@@ -172,15 +180,15 @@ class Snake:
     def get_info(self):
         global g_potato
         wall_x = 0
-        if self.location_x == COLUMN-2 or self.location_x == 0:
+        if self.location_x == COLUMN-2 or self.location_x == 1:
             wall_x = 1
         wall_y = 0
-        if self.location_y == VERS-2 or self.location_y == 0:
+        if self.location_y == VERS-2 or self.location_y == 1:
             wall_y = 1
         inputs = []
         inputs.extend(self.direction_values[self.direction])
-        input_5 = self.location_x - g_potato.location_x
-        input_6 = self.location_y - g_potato.location_y
+        input_5 = clip_int(self.location_x - g_potato.location_x)
+        input_6 = clip_int(self.location_y - g_potato.location_y)
         input_7 = wall_x
         input_8 = wall_y
         inputs.extend([input_5, input_6, input_7, input_8])
@@ -217,7 +225,7 @@ def fitness_function(l_genomes, l_config):
         genome.fitness = 1
         gameplay(genome, l_config)
 
-config_path = os.path.join(CWD,"TextFile1.txt")
+config_path = os.path.join(CWD, "neat_config.txt")
 g_config = neat.config.Config(neat.DefaultGenome,neat.DefaultReproduction,
                             neat.DefaultSpeciesSet,neat.DefaultStagnation,config_path)
 population = neat.Population(g_config)
@@ -227,6 +235,3 @@ stats = neat.StatisticsReporter()
 population.add_reporter(stats)
 
 winners = population.run(fitness_function, MAX_GENERATION_AMOUNT)
-
-#gameplay()
-#gameplay()
